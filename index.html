@@ -6,9 +6,67 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <h1>Backrooms</h1>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./node_modules/three/build/three.module.js",
+    "three/addons/": "./node_modules/three/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('black');
+
+const camera = new THREE.PerspectiveCamera(
+  70,
+  window.innerWidth / window.innerHeight,
+  0.05,
+  200
+);
+
+camera.position.set(0, 1.6, 5);
+
+const controls = new PointerLockControls(camera, renderer.domElement);
+
+document.addEventListener('click', () => controls.lock());
+
+const loader = new GLTFLoader();
+
+loader.load('./assets/original_backrooms.glb', (gltf) => {
+  scene.add(gltf.scene);
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+</script>
+
 <script src="script.js"></script>
+
 </body>
 </html>
-
-//./node_modules/three/build/three.module.js
