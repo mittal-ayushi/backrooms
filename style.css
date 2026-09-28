@@ -1,0 +1,34 @@
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: url("background.png") center center / cover no-repeat fixed;
+    overflow: hidden;
+    filter: sepia(1.6) saturate(0.7) contrast(1.15) brightness(0.9);
+}
+
+h1 {
+    padding-left: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 100px;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+    z-index: 10;
+    animation: flicker 7s ease-in-out infinite;
+}
+
+@keyframes flicker {
+    0%, 8%, 10%, 30%, 33%, 60%, 100% { opacity: 1; }
+    9%  { opacity: 0.3; }
+    31% { opacity: 0.6; }
+    32% { opacity: 0.2; }
+    61% { opacity: 0.8; }
+    75% { opacity: 1; }
+    76% { opacity: 0.1; }
+}

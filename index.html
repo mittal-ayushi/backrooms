@@ -16,6 +16,13 @@
 }
 </script>
 
+<audio id="bgMusic" loop autoplay>
+    <source src="godbi_3-backrooms-ambience-2-522106.mp3" type="audio/mpeg">
+</audio>
+
+<div id="overlay">
+  <div> CLICK ANYWHERE TO START</div>
+</div>
 <script type="module">
 
 import * as THREE from 'three';
@@ -43,6 +50,8 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 1.6, 5);
 
 const controls = new PointerLockControls(camera, renderer.domElement);
+const overlay = document.getElementById("overlay");
+const bgm = document.getElementById("bgm");
 
 document.addEventListener('click', () => controls.lock());
 
@@ -74,8 +83,8 @@ function animate() {
     moveDir.set(0, 0, 0);
     if (move.forward) moveDir.add(forwardVec);
     if (move.back)    moveDir.sub(forwardVec);
-    if (move.right)   moveDir.add(rightVec);
-    if (move.left)    moveDir.sub(rightVec);
+    if (move.right) camera.rotation.y -= 0.03;
+    if (move.left) camera.rotation.y += 0.03;
 
     if (moveDir.lengthSq() > 0) {
       moveDir.normalize().multiplyScalar(speed * delta);
