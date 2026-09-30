@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Backrooms</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./node_modules/three/build/three.module.js",
+    "three/addons/": "./node_modules/three/examples/jsm/"
+  }
+}
+</script>
+
+<audio id="bgMusic" loop autoplay>
+    <source src="godbi_3-backrooms-ambience-2-522106.mp3" type="audio/mpeg">
+</audio>
+
+<div id="overlay">
+  <br><br><br>
+  <div id="overlaytxt">CLICK ANYWHERE TO START</div>
+</div>
+<script type="module">
+
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.domElement.style.display = 'block';
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x2a2410, 0.07);
+scene.background = new THREE.Color(0x2a2410);
+
+const camera = new THREE.PerspectiveCamera(
+  70,
+  window.innerWidth / window.innerHeight,
+  0.05,
+  200
+);
+
+camera.position.set(0, 1.6, 5);
+
+const controls = new PointerLockControls(camera, renderer.domElement);
+const overlay = document.getElementById("overlay");
+const bgm = document.getElementById("bgm");
+
+overlay.addEventListener('click', () => {
+  controls.lock();
+});
+
+controls.addEventListener('lock', ()=>{
+  overlay.style.display='none';
+});
+
+controls.addEventListener('unlock', ()=>{
+  overlay.style.display='flex';
+});
+
+const loader = new GLTFLoader();
+const raycaster = new THREE.Raycaster();
+const colliders = [];
+
+loader.load('./assets/original_backrooms.glb', (gltf) => {
+  scene.add(gltf.scene);
+});
+
+//ANIMATE FUNCTION
+
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+
+  if (controls.isLocked) {
+    const speed = move.run ? runSpeed : walkSpeed;
+
+    forwardVec.set(0, 0, -1).applyQuaternion(camera.quaternion);
+    forwardVec.y = 0;
+    forwardVec.normalize();
+
+    rightVec.set(1, 0, 0).applyQuaternion(camera.quaternion);
+    rightVec.y = 0;
+    rightVec.normalize();
+
+    moveDir.set(0, 0, 0);
+    if (move.forward) moveDir.add(forwardVec);
+    if (move.back)    moveDir.sub(forwardVec);
+    if (move.right) camera.rotation.y -= 0.03;
+    if (move.left) camera.rotation.y += 0.03;
+
+    if (moveDir.lengthSq() > 0) {
+      moveDir.normalize().multiplyScalar(speed * delta);
+      tryMove(moveDir.x, moveDir.z, camera);
+    }
+  }
+  renderer.render(scene, camera);
+
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+document.body.style.margin = '0';
+document.body.style.overflow = 'hidden';
+
+// MOVEMENTS
+
+const move = { forward:false, back:false, left:false, right:false, run:false };
+const walkSpeed = 2.5;
+const runSpeed = 4.5;
+const playerRadius = 0.4;
+const clock = new THREE.Clock();
+
+document.addEventListener('keydown', (e) => {
+  switch(e.code){
+    case 'KeyW': case 'ArrowUp': move.forward = true; break;
+    case 'KeyS': case 'ArrowDown': move.back = true; break;
+    case 'KeyA': case 'ArrowLeft': move.left = true; break;
+    case 'KeyD': case 'ArrowRight': move.right = true; break;
+    case 'ShiftLeft': case 'ShiftRight': move.run = true; break;
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  switch(e.code){
+    case 'KeyW': case 'ArrowUp': move.forward = false; break;
+    case 'KeyS': case 'ArrowDown': move.back = false; break;
+    case 'KeyA': case 'ArrowLeft': move.left = false; break;
+    case 'KeyD': case 'ArrowRight': move.right = false; break;
+    case 'ShiftLeft': case 'ShiftRight': move.run = false; break;
+  }
+});
+const moveDir = new THREE.Vector3();
+const forwardVec = new THREE.Vector3();
+const rightVec = new THREE.Vector3();
+
+function tryMove(deltaX, deltaZ, obj){
+  if (deltaX !== 0){
+    const dir = new THREE.Vector3(Math.sign(deltaX),0,0);
+    if (!hitsWall(obj.position, dir, Math.abs(deltaX) + playerRadius)) obj.position.x += deltaX;
+  }
+  if (deltaZ !== 0){
+    const dir = new THREE.Vector3(0,0,Math.sign(deltaZ));
+    if (!hitsWall(obj.position, dir, Math.abs(deltaZ) + playerRadius)) obj.position.z += deltaZ;
+  }
+}
+
+loader.load('./assets/original_backrooms.glb', (gltf) => {
+  scene.add(gltf.scene);
+  gltf.scene.traverse((child) => {
+    if (child.isMesh) colliders.push(child);
+  });
+});
+
+let reality = 0;
+
+function hitsWall(pos, dir, dist){
+  if (colliders.length === 0) return false;
+  raycaster.set(new THREE.Vector3(pos.x, pos.y, pos.z), dir);
+  raycaster.far = dist;
+  const hits = raycaster.intersectObjects(colliders, false);
+  return hits.length > 0 && hits[0].distance < dist;
+}
+
+
+animate()
+
+</script>
+
+<script src="script.js"></script>
+
+</body>
+</html>
