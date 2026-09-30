@@ -24,6 +24,7 @@
   <br><br><br>
   <div id="overlaytxt">CLICK ANYWHERE TO START</div>
 </div>
+<div id="escapetxt">THERE IS NO ESCAPE TO THE BACKROOMS</div>
 <script type="module">
 
 import * as THREE from 'three';
@@ -52,7 +53,10 @@ camera.position.set(0, 1.6, 5);
 
 const controls = new PointerLockControls(camera, renderer.domElement);
 const overlay = document.getElementById("overlay");
-const bgm = document.getElementById("bgm");
+const bgm = document.getElementById("bgMusic");
+const escapetxt = document.getElementById("escapetxt");
+
+let escapetimeout = null;
 
 overlay.addEventListener('click', () => {
   controls.lock();
@@ -63,16 +67,17 @@ controls.addEventListener('lock', ()=>{
 });
 
 controls.addEventListener('unlock', ()=>{
-  overlay.style.display='flex';
+  escapetxt.classList.add('show');
+  clearTimeout(escapetimeout);
+  escapetimeout = setTimeout(() => {
+  escapetxt.classList.remove('show');
+    controls.lock(); 
+  }, 2200);
 });
 
 const loader = new GLTFLoader();
 const raycaster = new THREE.Raycaster();
 const colliders = [];
-
-loader.load('./assets/original_backrooms.glb', (gltf) => {
-  scene.add(gltf.scene);
-});
 
 //ANIMATE FUNCTION
 
@@ -121,6 +126,7 @@ const walkSpeed = 2.5;
 const runSpeed = 4.5;
 const playerRadius = 0.4;
 const clock = new THREE.Clock();
+
 
 document.addEventListener('keydown', (e) => {
   switch(e.code){
